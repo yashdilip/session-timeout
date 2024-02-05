@@ -1,0 +1,200 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Session Timeout Modal</title>
+
+    <!-- Include Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <!-- Include jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <!-- Include Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+  </head>
+
+<body>
+
+    <!-- Bootstrap Modal for Session Timeout -->
+    <div class="modal fade" id="sessionTimeoutModal" tabindex="-1" role="dialog" aria-labelledby="sessionTimeoutModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="sessionTimeoutModalLabel">Session Timeout</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="closeButton">
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Your session is about to expire. You will be logged out in <span id="countdown">2:00</span> minutes.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" id="logoutButton">Logout</button>
+                    <button type="button" class="btn btn-primary" id="renewButton">Renew Session</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let idleTime = 0;
+        const idleInterval = 1; // 1 second
+        const countdownDuration = 120; // 2 minutes in seconds
+        const idleThreshold = 13 * 60; // 13 minutes in seconds
+        let canShowModal = true;
+        let countdownInterval;
+
+        function resetIdleTime() {
+            idleTime = 0;
+
+            // Set a delay before allowing the modal to be shown again
+            setTimeout(function () {
+                canShowModal = true;
+            }, idleThreshold * 1000); // Adjust the delay to the full 13 minutes
+        }
+
+        function startIdleTimer() {
+            setInterval(function () {
+                idleTime += 1;
+                if (idleTime >= idleThreshold && canShowModal) {
+                    // Update the modal attributes and display it
+                    updateModalAttributes('sessionTimeoutModal', {
+                        title: 'Session Timeout',
+                        bodyMessage: 'Your session is about to expire. You will be logged out in <span id="countdown">2:00</span> minutes.',
+                        logoutLabel: 'Logout',
+                        renewLabel: 'Renew Session',
+                        headerClass: '',
+                        bodyClass: '',
+                        footerClass: ''
+                    }).modal('show');
+
+                    // Start countdown timer only if not already started
+                    if (!countdownInterval) {
+                        startCountdown();
+                    }
+
+                    canShowModal = false; // Prevent the modal from being shown immediately after closing
+                }
+            }, idleInterval * 1000); // Convert seconds to milliseconds
+        }
+
+        function startCountdown() {
+          if (!countdownInterval) { // Check if the countdown is not already running
+              let secondsRemaining = countdownDuration;
+
+              function updateCountdown() {
+                  const minutes = Math.floor(secondsRemaining / 60);
+                  const seconds = secondsRemaining % 60;
+
+                  if (secondsRemaining >= 0) {
+                      document.getElementById('countdown').innerText = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+                  }
+
+                  if (secondsRemaining <= 0) {
+                      // Perform logout or any other action when countdown reaches zero
+                      // For example: window.location.href = 'logout.jsp';
+                      handleSessionExpiration();
+                      resetIdleTime(); // Reset idle time when the session expires
+                      $('#sessionTimeoutModal').modal('hide'); // Close the modal
+                  }
+
+                  secondsRemaining -= 1;
+              }
+
+              // Update countdown every second
+              countdownInterval = setInterval(function () {
+                  updateCountdown();
+              }, 1000);
+
+              // Clear the interval when the modal is closed
+              $('#sessionTimeoutModal').on('hidden.bs.modal', function () {
+                  clearInterval(countdownInterval);
+                  countdownInterval = null; // Reset the interval variable
+                  canShowModal = true; // Allow the modal to be shown again after closing
+              });
+
+              // Trigger an immediate update to start the countdown
+              updateCountdown();
+          }
+      }
+
+
+        function startCountdown1() {
+            let secondsRemaining = countdownDuration;
+
+            function updateCountdown() {
+              const minutes = Math.floor(secondsRemaining / 60);
+              const seconds = secondsRemaining % 60;
+
+              if (secondsRemaining >= 0) {
+                  document.getElementById('countdown').innerText = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+              }
+
+              if (secondsRemaining <= 0) {
+                  // Perform logout or any other action when countdown reaches zero
+                  // For example: window.location.href = 'logout.jsp';
+                  handleSessionExpiration();
+                  resetIdleTime(); // Reset idle time when the session expires
+                  $('#sessionTimeoutModal').modal('hide'); // Close the modal
+              }
+
+              secondsRemaining -= 1;
+            }
+
+
+            // Update countdown every second
+            countdownInterval = setInterval(function () {
+                updateCountdown();
+            }, 1000);
+
+            // Clear the interval when the modal is closed
+            $('#sessionTimeoutModal').on('hidden.bs.modal', function () {
+                clearInterval(countdownInterval);
+                countdownInterval = null; // Reset the interval variable
+                canShowModal = true; // Allow the modal to be shown again after closing
+            });
+
+            // Trigger an immediate update to start the countdown
+            updateCountdown();
+        }
+
+        function handleSessionExpiration() {
+            // Handle session expiration here
+            console.log('Session Expired. Logging out...');
+            // You can replace the console.log with your custom logout logic
+        }
+
+        // Initialize idle timer
+        startIdleTimer();
+
+        // Example event handlers for buttons inside the modal
+        $('#logoutButton').on('click', function () {
+            handleSessionExpiration();
+        });
+
+        $('#renewButton, #closeButton').on('click', function () {
+            // Renew session action
+            resetIdleTime();
+            $('#sessionTimeoutModal').modal('hide');
+        });
+
+        // Modified updateModalAttributes function to support HTML content
+        function updateModalAttributes(modalId, attributes) {
+            const modal = $(`#${modalId}`);
+            modal.find('.modal-title').html(attributes.title || 'Default Title');
+            modal.find('.modal-body').html(attributes.bodyMessage || 'Default Body Message');
+            modal.find('#logoutButton').html(attributes.logoutLabel || 'Default Logout');
+            modal.find('#renewButton').html(attributes.renewLabel || 'Default Renew Session');
+            modal.find('.modal-header').removeClass().addClass('modal-header ' + (attributes.headerClass || ''));
+            modal.find('.modal-body').removeClass().addClass('modal-body ' + (attributes.bodyClass || ''));
+            modal.find('.modal-footer').removeClass().addClass('modal-footer ' + (attributes.footerClass || ''));
+
+            return modal;
+        }
+    </script>
+
+</body>
+
+</html>
